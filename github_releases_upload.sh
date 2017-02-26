@@ -74,7 +74,7 @@ create_release() {
 #        $5 - release description in markdown (optional)
 # output: release id if created
   [[ "$2" == "draft" ]] && draft=1
-  read_id_from_json "$( echo "{ \"tag_name\": \"$1\"${draft:+, \"draft\": true}${3:+, \"target_commitish\": \"$3\"${4:+, \"name\": \"$4\"${5:+, \"body\": \"$5\"}}} }" | curl -q -s -H "$AUTH" -d @- "$API" )" "tag_name" "$1"
+  read_id_from_json "$(echo "{ \"tag_name\": \"$1\"${draft:+, \"draft\": true}${3:+, \"target_commitish\": \"$3\"${4:+, \"name\": \"$4\"${5:+, \"body\": \"$5\"}}} }" | curl -q -s -H "$AUTH" --data-urlencode @- "$API")" "tag_name" "$1"
 }
 
 find_file_id() {
