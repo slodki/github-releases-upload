@@ -103,6 +103,7 @@ upload_file() {
 
 id="$(find_release_id "$2")"
 [[ "$id" ]] || id="$(create_release "$2" "${4:-draft}" "$5" "$6" "$7")"
+[[ "$id" ]] || exit 3
 fid="$(find_file_id "$id" "$3")"
 [[ "$fid" ]] && delete_file "$fid"
-[[ "$(upload_file "$id" "$3")" == "uploaded" ]] || exit 3
+[[ "$(upload_file "$id" "$3")" == "uploaded" ]] || exit 4
