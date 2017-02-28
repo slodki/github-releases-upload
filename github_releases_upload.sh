@@ -13,8 +13,8 @@ AUTH="Authorization: token $GITHUB_TOKEN"
 API="https://api.github.com/repos/$1/releases"
 URL="https://uploads.github.com/repos/$1/releases"
 
-type curl >&/dev/null || { >&2 echo 'Error: curl not found.'; exit 1; }
-[[ -r "$3" ]] || { >&2 echo "Error: can't read file '$3'."; exit 2; }
+type curl >&/dev/null || { >&2 echo 'Error: curl not found.'; exit 2; }
+[[ -r "$3" ]] || { >&2 echo "Error: can't read file '$3'."; exit 3; }
 
 trim() {
   local var="$*"
@@ -103,7 +103,7 @@ upload_file() {
 
 id="$(find_release_id "$2")"
 [[ "$id" ]] || id="$(create_release "$2" "${4:-draft}" "$5" "$6" "$7")"
-[[ "$id" ]] || exit 3
+[[ "$id" ]] || { >&2 echo "Error: can't find release tagged '$2' or create it on GitHub."; exit 4; }
 fid="$(find_file_id "$id" "$3")"
 [[ "$fid" ]] && delete_file "$fid"
-[[ "$(upload_file "$id" "$3")" == "uploaded" ]] || exit 4
+[[ "$(upload_file "$id" "$3")" == "uploaded" ]] || { >&2 echo "Error: file upload failed."; exit 5; }
