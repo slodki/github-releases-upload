@@ -13,8 +13,8 @@ AUTH="Authorization: token $GITHUB_TOKEN"
 API="https://api.github.com/repos/$1/releases"
 URL="https://uploads.github.com/repos/$1/releases"
 
-type curl >&/dev/null || { >&2 echo 'Error: curl not found.'; exit 2; }
-[[ -r "$3" ]] || { >&2 echo "Error: can't read file '$3'."; exit 3; }
+err() { >&2 echo "$BASH_SOURCE: ${@:2}"; exit $1; }
+type curl >&/dev/null || err 2 "Error: curl not found."
 
 trim() {
   local var="$*"
@@ -103,7 +103,10 @@ upload_file() {
 
 id="$(find_release_id "$2")"
 [[ "$id" ]] || id="$(create_release "$2" "${4:-draft}" "$5" "$6" "$7")"
-[[ "$id" ]] || { >&2 echo "Error: can't find release tagged '$2' or create it on GitHub."; exit 4; }
-fid="$(find_file_id "$id" "$3")"
-[[ "$fid" ]] && delete_file "$fid"
-[[ "$(upload_file "$id" "$3")" == "uploaded" ]] || { >&2 echo "Error: file upload failed."; exit 5; }
+[[ "$id" ]] || err 3 "Error: can't find release tagged '$2' or create it on GitHub."
+for f in $3; do
+  [[ -r "$f" ]] || err 4 "Error: can't read file '$f'."
+  fid="$(find_file_id "$id" "$f")"
+  [[ "$fid" ]] && delete_file "$fid"
+  [[ "$(upload_file "$id" "$f")" == "uploaded" ]] || err 5 "Error: file upload failed."
+done
